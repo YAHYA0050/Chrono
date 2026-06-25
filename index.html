@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CHRONO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#f97316;--ph:#ea580c;
+  --bg:transparent;/* تم جعلها شفافة لتظهر الخلفية */
+  --card:rgba(24, 24, 24, 0.85);/* إضافة شفافية للكروت لتندمج مع الفيديو */
+  --card2:rgba(31, 31, 31, 0.9);
+  --light:#f1f5f9;--muted:#7a8ca0;--border:#252f3d;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--ink:#000;
+  --purple:#7c3aed;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0b0b0b;color:var(--light);font-family:'Noto Kufi Arabic','Barlow Condensed',system-ui,sans-serif;font-size:16px;line-height:1.55;padding:14px;min-height:100vh;}
+html[lang="en"] body,html[lang="fr"] body{font-family:'Barlow Condensed',system-ui,sans-serif;}
+.wrap{max-width:680px;margin:0 auto;}
+
+/* ── BACKGROUND VIDEO ── */
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
+}
+.bg-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 11, 11, 0.55); /* طبقة داكنة خفيفة لتحسين وضوح النصوص */
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── CURSOR ── */
+#cdot{pointer-events:none;position:fixed;width:11px;height:11px;background:var(--primary);border-radius:50%;transform:translate(-50%,-50%);z-index:10000;transition:width .13s,height .13s;mix-blend-mode:screen;}
+#cdot.big{width:24px;height:24px;background:#fff;}
+#cglow{pointer-events:none;position:fixed;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.1) 0%,transparent 70%);transform:translate(-50%,-50%);z-index:9999;}
+@media(hover:none){#cdot,#cglow{display:none;}}
+
+/* ── BRAND ── */
+.brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:6px;}
+.brand-logo{font-size:3rem;}
+.brand-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(2.2rem,9vw,3.2rem);
+  font-weight:900;
+  color:var(--primary);
+  letter-spacing:6px;
+  text-transform:uppercase;
+  line-height:1;
+  text-shadow:0 0 40px rgba(249,115,22,.25), 3px 3px 0 #000;
+}
+.brand-tag{font-size:.75rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:-2px;}
+
+/* ── PRICE BANNER ── */
+.price-bar{display:flex;align-items:center;gap:10px;background:rgba(26, 16, 0, 0.85);border:2px solid var(--primary);border-radius:10px;padding:11px 15px;margin-bottom:18px;box-shadow:3px 3px 0 var(--ink);backdrop-filter: blur(4px);}
+.price-bar .icon{font-size:1.4rem;flex-shrink:0;}
+.price-bar p{font-size:clamp(.82rem,3vw,.93rem);line-height:1.4;}
+.price-bar strong{color:var(--primary);}
+
+/* ── COUNTER BANNER (Delivery View) ── */
+.counter-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(24,24,24,0.9);border:2px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;box-shadow:3px 3px 0 var(--ink);font-size:.88rem;}
+.counter-bar span{font-weight:700;}
+.counter-bar strong{color:var(--green);font-size:1.05rem;}
+
+/* ── HEADER ── */
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--border);flex-wrap:wrap;gap:8px;}
+header h1{font-size:clamp(.95rem,4vw,1.2rem);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;}
+
+/* ── TOP BAR ── */
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.lang-sel{padding:7px 30px 7px 12px;border-radius:8px;border:2px solid var(--ink);font-weight:700;font-size:.82rem;background:var(--card);color:var(--light);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath fill='%23f97316' d='M5 7L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:8px center;}
+html[dir="rtl"] .lang-sel{padding:7px 12px 7px 30px;background-position:calc(100% - 8px) center;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:9px;font-weight:700;border:2px solid var(--ink);transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s,background .18s,filter .18s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer;font-family:inherit;}
+.btn:active{transform:scale(.95)!important;}
+.btn-primary{background:var(--primary);color:#000;padding:10px 17px;font-size:clamp(.82rem,3vw,.92rem);}
+.btn-primary:hover{background:var(--ph);color:#fff;transform:translateY(-3px) scale(1.04);box-shadow:0 8px 18px rgba(249,115,22,.4);}
+.btn-green{background:var(--green);color:#fff;padding:13px 18px;font-size:1rem;width:100%;margin-top:4px;}
+.btn-green:hover{filter:brightness(1.1);transform:translateY(-3px) scale(1.02);box-shadow:0 8px 20px rgba(34,197,94,.3);}
+.btn-blue{background:var(--blue);color:#fff;padding:12px 16px;flex:1;font-size:clamp(.83rem,3vw,.93rem);}
+.btn-blue:hover{background:#2563eb;transform:translateY(-3px) scale(1.03);box-shadow:0 8px 18px rgba(59,130,246,.4);}
+.btn-blue.ok{background:var(--green);}
+.btn-blue.err{background:var(--red);}
+.btn-blue.spin .loc-icon{animation:pin .7s ease-in-out infinite;}
+.btn-slate{background:#2d3d50;color:#fff;padding:9px 15px;font-size:clamp(.8rem,3vw,.88rem);}
+.btn-slate:hover{filter:brightness(1.2);transform:translateY(-2px);}
+.btn-claim{background:var(--purple);color:#fff;padding:7px 13px;font-size:.82rem;border-radius:7px;}
+.btn-claim:hover{background:#6d28d9;transform:translateY(-2px);}
+.btn-claim.claimed{background:#1e293b;color:var(--muted);cursor:default;pointer-events:none;}
+.btn-done{background:var(--green);color:#fff;padding:7px 13px;font-size:.82rem;border-radius:7px;}
+.btn-done:hover{filter:brightness(1.1);transform:translateY(-2px);}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;font-size:.8rem;border-radius:7px;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+.btn-wa{background:#25D366;color:#fff;padding:8px 14px;font-size:.85rem;border-radius:7px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-wa:hover{filter:brightness(1.1);transform:translateY(-2px);}
+.btn-cancel{background:#450a0a;color:#fca5a5;border:1px solid #7f1d1d;padding:7px 13px;font-size:.82rem;border-radius:7px;}
+.btn-cancel:hover{background:#7f1d1d;color:#fff;}
+@keyframes pin{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-4px) scale(1.2);}}
+
+/* ── VIEWS ── */
+.view{background:var(--card);padding:20px 18px;border-radius:14px;border:3px solid var(--ink);box-shadow:0 10px 28px -5px rgba(0,0,0,.7);display:none;opacity:0;transform:translateY(14px) scale(.98);transition:opacity .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1);backdrop-filter: blur(8px);}
+.view.active{display:block;opacity:1;transform:translateY(0) scale(1);}
+
+/* ── FORM ── */
+.fg{margin-bottom:16px;}
+label{display:block;margin-bottom:5px;font-weight:700;font-size:clamp(.78rem,3vw,.85rem);color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.opt-tag{font-size:.72rem;font-weight:500;color:#475569;background:#1e2a3a;border-radius:4px;padding:1px 6px;margin-inline-start:5px;text-transform:lowercase;letter-spacing:0;}
+input,select,textarea{width:100%;padding:11px 13px;border:2px solid var(--border);border-radius:9px;font-size:1rem;background:rgba(32, 32, 32, 0.85);color:var(--light);transition:border-color .2s,box-shadow .2s,transform .18s;font-family:inherit;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(249,115,22,.15);transform:translateY(-1px);}
+textarea{resize:vertical;min-height:88px;}
+.card-title{margin-bottom:13px;font-size:clamp(.95rem,4vw,1.1rem);font-weight:800;color:var(--primary);border-inline-start:4px solid var(--primary);padding-inline-start:9px;}
+.divider{height:2px;background:var(--border);margin:20px 0;}
+
+/* ── MENU PHOTO PANEL ── */
+#menu-panel{display:none;margin-bottom:16px;border:2px solid var(--border);border-radius:10px;overflow:hidden;}
+#menu-panel-name{background:var(--card2);padding:9px 13px;font-weight:700;font-size:.9rem;color:var(--primary);border-bottom:1px solid var(--border);}
+#menu-photos-grid{display:flex;gap:8px;padding:10px;overflow-x:auto;flex-wrap:nowrap;}
+#menu-photos-grid img{height:110px;width:auto;border-radius:7px;border:2px solid var(--border);object-fit:cover;flex-shrink:0;}
+#menu-photos-grid .no-photo{color:var(--muted);font-size:.85rem;padding:10px;}
+
+/* ── LOCATION ── */
+.loc-row{display:flex;gap:9px;align-items:stretch;}
+#loc-status{display:none;margin-top:7px;padding:8px 12px;border-radius:7px;font-size:.82rem;font-weight:600;}
+#loc-status.show{display:flex;align-items:center;gap:6px;}
+#loc-status.ok{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+#loc-status.err{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.3);}
+#loc-status.load{background:rgba(249,115,22,.08);color:#fdba74;border:1px solid rgba(249,115,22,.25);}
+
+/* ── ORDER TRACKING PANEL (customer) ── */
+#tracking-panel{margin-top:18px;background:var(--card2);border:2px solid var(--border);border-radius:12px;overflow:hidden;}
+.track-hd{background:#111;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;}
+.track-hd-title{font-weight:800;font-size:.95rem;color:var(--primary);}
+.track-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.track-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.88rem;}
+.track-lbl{color:var(--muted);font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.track-val{font-weight:700;color:var(--light);}
+.track-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+
+/* ── ORDER CARDS (delivery) ── */
+.order-card{border:3px solid var(--ink);padding:15px 17px;border-radius:11px;margin-bottom:13px;background:var(--card2);box-shadow:4px 4px 0 var(--ink);transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s;}
+.order-card:hover{transform:translate(-3px,-3px);box-shadow:7px 7px 0 var(--ink);}
+.order-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:9px;flex-wrap:wrap;}
+.order-rest{font-weight:800;font-size:1rem;color:var(--primary);}
+.badge{padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700;border:1px solid var(--ink);white-space:nowrap;}
+.badge.pending{background:#fef08a;color:#854d0e;}
+.sec-lbl{font-size:.73rem;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin:7px 0 3px;}
+.data-box{background:#141414;padding:9px 12px;border-radius:7px;font-size:.92rem;color:var(--light);border:2px solid var(--ink);white-space:pre-line;}
+.maps-chip{display:inline-flex;align-items:center;gap:5px;background:#1d4ed8;color:#fff;text-decoration:none;padding:4px 11px;border-radius:20px;font-size:.78rem;font-weight:700;margin-top:6px;border:1px solid var(--ink);transition:background .2s,transform .2s;}
+.maps-chip:hover{background:#1e40af;transform:translateY(-1px);}
+.order-ft{display:flex;justify-content:space-between;align-items:center;margin-top:9px;flex-wrap:wrap;gap:7px;font-size:.79rem;color:var(--muted);}
+.claim-info{font-size:.8rem;color:#a78bfa;font-weight:600;margin-top:4px;}
+
+/* ── MOTO ANIM ── */
+#moto{width:100%;height:74px;background:#111;border:2px dashed var(--primary);border-radius:8px;margin:20px 0;position:relative;overflow:hidden;display:none;}
+.road{position:absolute;bottom:17px;width:100%;height:4px;background:repeating-linear-gradient(90deg,#fff,#fff 18px,transparent 18px,transparent 36px);}
+.moto-em{position:absolute;bottom:9px;font-size:2rem;left:-60px;}
+@keyframes drive{0%{left:-60px;transform:scaleX(1);}100%{left:110%;transform:scaleX(1);}}
+#moto.go .moto-em{animation:drive 2s linear forwards;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;inset-inline-end:18px;background:#1e293b;border:2px solid var(--primary);border-radius:12px;padding:12px 18px;font-size:.88rem;font-weight:600;color:var(--light);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9998;transform:translateY(100px);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .35s;max-width:320px;}
+#toast.show{transform:translateY(0);opacity:1;}
+
+/* ── STAFF LOGIN MODAL ── */
+#staff-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-box{background:var(--card);border:3px solid var(--ink);border-radius:16px;padding:30px 24px;width:min(390px,100%);box-shadow:6px 6px 0 var(--ink);text-align:center;}
+.modal-icon{font-size:2.8rem;margin-bottom:8px;}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:900;color:var(--primary);margin-bottom:3px;letter-spacing:2px;}
+.modal-sub{color:var(--muted);font-size:.86rem;margin-bottom:20px;}
+.modal-box input{margin-bottom:10px;text-align:center;}
+.modal-err{color:var(--red);font-size:.83rem;margin-top:6px;min-height:1.1em;}
+
+/* ── FOOTER ── */
+footer{margin-top:32px;padding-top:20px;border-top:2px solid var(--border);text-align:center;}
+.ty{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:12px;}
+.socials{display:flex;justify-content:center;gap:11px;flex-wrap:wrap;margin-bottom:16px;}
+.s-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:25px;color:#fff;font-weight:700;font-size:clamp(.78rem,3vw,.86rem);text-decoration:none;border:2px solid var(--ink);box-shadow:2px 2px 0 #000;transition:transform .2s,box-shadow .2s;}
+.s-btn:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 #000;}
+.wa{background:#25D366;}.ig{background:#E1306C;}.ml{background:#ea4335;}
+</style>
+</head>
+<body>
+
+<!-- فيديو الخلفية وطبقة التعتيم المحسنة -->
+<video autoplay muted loop playsinline class="bg-video">
+  <source src="bg video.mp4" type="video/mp4">
+</video>
+<div class="bg-overlay"></div>
+
+<div id="cglow"></div>
+<div id="cdot"></div>
+<div id="toast"></div>
+
+<!-- ══ STAFF LOGIN MODAL ══ -->
+<div id="staff-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-icon">🛵</div>
+    <div class="modal-title">CHRONO</div>
+    <div class="modal-sub" id="sm-sub">أدخل بياناتك للدخول</div>
+    <input type="text"     id="sm-name" placeholder="الاسم الكامل" maxlength="40">
+    <input type="tel"      id="sm-wa"   placeholder="واتساب (212XXXXXXXXX)" maxlength="20">
+    <input type="password" id="sm-pass" placeholder="الرمز السري" maxlength="20"
+      onkeydown="if(event.key==='Enter')staffLogin()">
+    <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:4px;" onclick="staffLogin()" id="sm-btn">🔓 دخول</button>
+    <div class="modal-err" id="sm-err"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="top-bar">
+    <select class="lang-sel" onchange="setLang(this.value)" id="lang-sel">
+      <option value="ar">🇲🇦 العربية</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="en">🇬🇧 English</option>
+    </select>
+    <div id="staff-info" style="display:none;font-size:.82rem;color:var(--muted);align-items:center;gap:8px;">
+      <span id="staff-name-display"></span>
+      <button class="btn-logout btn" onclick="staffLogout()">↩</button>
+    </div>
+  </div>
+
+  <div class="brand">
+    <div class="brand-logo">🛵</div>
+    <div class="brand-name">CHRONO</div>
+    <div class="brand-tag">توصيل سريع · Fast Delivery</div>
+  </div>
+
+  <div class="price-bar">
+    <div class="icon">💰</div>
+    <p id="price-txt">رسوم التوصيل: <strong>10 – 15 درهم</strong> لكل طلب، تُدفع عند الاستلام.</p>
+  </div>
+
+  <header>
+    <h1 id="app-title">🛵 اطلب الآن</h1>
+    <button class="btn btn-primary" id="toggle-btn" onclick="toggleView()">📦 لوحة التوصيل</button>
+  </header>
+
+  <!-- ══ CUSTOMER VIEW ══ -->
+  <div class="view active" id="cust-view">
+    <h3 class="card-title" id="order-title">أنشئ طلبك</h3>
+
+    <div class="fg">
+      <label id="lbl-rest">المطعم أو المتجر</label>
+      <select id="order-rest" onchange="onRestChange()" required></select>
+    </div>
+
+    <!-- MENU PHOTOS PANEL -->
+    <div id="menu-panel">
+      <div id="menu-panel-name"></div>
+      <div id="menu-photos-grid"></div>
+    </div>
+
+    <div class="fg">
+      <label id="lbl-items">ماذا تريد؟</label>
+      <textarea id="order-items"></textarea>
+    </div>
+    <div class="fg">
+      <label id="lbl-addr">عنوان التوصيل <span class="opt-tag" id="lbl-opt">اختياري</span></label>
+      <input type="text" id="order-addr">
+    </div>
+    <div class="fg">
+      <label id="lbl-loc">📍 موقعك المباشر</label>
+      <div class="loc-row">
+        <button type="button" class="btn btn-blue" id="loc-btn" onclick="shareLocation()">
+          <span class="loc-icon" id="loc-icon">📍</span>
+          <span id="loc-btn-txt">مشاركة موقعي</span>
+        </button>
+      </div>
+      <div id="loc-status"></div>
+    </div>
+
+    <button class="btn btn-green" onclick="placeOrder()" id="confirm-btn">🚀 تأكيد الطلب</button>
+
+    <!-- ORDER TRACKING PANEL -->
+    <div id="tracking-panel" style="display:none;">
+      <div class="track-hd">
+        <span class="track-hd-title" id="tr-title">📦 متابعة طلبك</span>
+        <span id="tr-id" style="font-size:.78rem;color:var(--muted);"></span>
+      </div>
+      <div class="track-body">
+        <div class="track-row">
+          <span class="track-lbl" id="tr-lbl-status">الحالة</span>
+          <span class="track-val" id="tr-status">—</span>
+        </div>
+        <div class="track-row">
+          <span class="track-lbl" id="tr-lbl-worker">الموصّل</span>
+          <span class="track-val" id="tr-worker">—</span>
+        </div>
+        <div class="track-actions" id="tr-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DELIVERY VIEW ══ -->
+  <div class="view" id="del-view">
+    <!-- حزام العداد اليومي للطلبات المكتملة -->
+    <div class="counter-bar">
+      <span id="lbl-counter">الطلبات المكتملة اليوم (منذ 00:00):</span>
+      <strong id="delivery-count">0</strong>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <h3 class="card-title" style="margin:0" id="live-title">الطلبات الواردة</h3>
+      <button class="btn btn-slate" onclick="renderOrders()" id="refresh-btn">🔄 تحديث</button>
+    </div>
+    <div id="orders-list"></div>
+  </div>
+
+  <div id="moto"><div class="road"></div><div class="moto-em">🛵💨</div></div>
+
+  <footer>
+    <div class="ty" id="ty-msg">✨ شكراً لاختياركم CHRONO! ✨</div>
+    <div class="socials">
+      <a href="https://wa.me/212600000000" target="_blank" class="s-btn wa">💬 WhatsApp</a>
+      <a href="https://instagram.com/your_username" target="_blank" class="s-btn ig">📸 Instagram</a>
+      <a href="mailto:yourbrand@gmail.com" class="s-btn ml">✉️ Gmail</a>
+    </div>
+    <div class="brand-name" style="font-size:1.4rem;margin-bottom:4px;">CHRONO</div>
+    <p style="font-size:.75rem;color:var(--muted);">© 2026 All Rights Reserved</p>
+  </footer>
+</div>
+
+<script>
+/* ── CURSOR ── */
+const dot=document.getElementById('cdot'),glow=document.getElementById('cglow');
+let mx=0,my=0,gx=0,gy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+(function gl(){gx+=(mx-gx)*.1;gy+=(my-gy)*.1;glow.style.left=gx+'px';glow.style.top=gy+'px';requestAnimationFrame(gl);})();
+function bindCursor(){document.querySelectorAll('button,a,select,input,textarea').forEach(el=>{el.onmouseenter=()=>dot.classList.add('big');el.onmouseleave=()=>dot.classList.remove('big');});}
+function addMagnet(el){el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();const dx=(e.clientX-r.left-r.width/2)*.28,dy=(e.clientY-r.top-r.height/2)*.28;el.style.transform=`translate(${dx}px,${dy}px) scale(1.05)`;});el.addEventListener('mouseleave',()=>{el.style.transform='';});}
+function bindMagnets(){document.querySelectorAll('.btn').forEach(addMagnet);}
+
+/* ── TOAST ── */
+function showToast(msg,dur=4000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),dur);}
+
+/* ── NOTIFICATIONS ── */
+function askNotifPerm(){if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();}
+function pushNotif(title,body){if('Notification'in window&&Notification.permission==='granted'){try{new Notification(title,{body});}catch(e){}}}
+
+/* ── STATE ── */
+const STAFF_PASS='1234';
+let lang='ar',view='customer',gpsData=null;
+let staffName=localStorage.getItem('qd_staff_name')||'';
+let staffWa  =localStorage.getItem('qd_staff_wa')||'';
+let staffLogged=!!staffName;
+let lastOrderId=null;
+
+const INIT_RESTS=["10K","Delish garden","to the sweet","Posto Gosto","Swidi","Coin gourmand","Snack amir","Ait maten","snack zacki","بانبني على الفحم","Snack bg","Green Canarias","Janoub","IMA","Amigo","MC SOLA","La Gondola","With friends","Marmara Fruits","مقشدة يوسف","Brunch Bistro","إمبراطور","Maestro","Le Jus Quotidien","Snack Youness"];
+function getOrders(){return JSON.parse(localStorage.getItem('qd_orders'))||[];}
+function saveOrders(o){localStorage.setItem('qd_orders',JSON.stringify(o));}
+function getRests(){return JSON.parse(localStorage.getItem('qd_rests'))||INIT_RESTS;}
+function getMenus(){return JSON.parse(localStorage.getItem('qd_menus'))||{};}
+
+/* ── PERSISTENT COUNTER WITH 24H RESET AT 00:00 ── */
+function checkAndRefreshCounter() {
+  const todayStr = new Date().toDateString(); // يحصل على تاريخ اليوم بصيغة نصية (بدون الوقت) مثل "Thu Jun 25 2026"
+  const lastDate = localStorage.getItem('chrono_counter_date');
+  
+  // إذا تغير التاريخ (أي مرّت الساعة 00:00)، يتم تصفير العداد وتحديث التاريخ
+  if (lastDate !== todayStr) {
+    localStorage.setItem('chrono_del_count', '0');
+    localStorage.setItem('chrono_counter_date', todayStr);
+  }
+  
+  // عرض العداد الحالي في الواجهة
+  const count = localStorage.getItem('chrono_del_count') || '0';
+  document.getElementById('delivery-count').textContent = count;
+}
+
+function incrementCounter() {
+  checkAndRefreshCounter(); // التأكد من التاريخ أولاً قبل الزيادة
+  let count = parseInt(localStorage.getItem('chrono_del_count') || '0');
+  count++;
+  localStorage.setItem('chrono_del_count', count.toString());
+  document.getElementById('delivery-count').textContent = count.toString();
+}
+
+/* ── TRANSLATIONS ── */
+const T={
+  ar:{
+    appTitle:"🛵 اطلب الآن",toggleDel:"📦 لوحة التوصيل",toggleCust:"◀ العودة",delTitle:"📦 الطلبات الواردة",
+    orderTitle:"أنشئ طلبك",lblRest:"المطعم أو المتجر",lblItems:"ماذا تريد؟",lblAddr:"عنوان التوصيل",
+    lblOpt:"اختياري",lblLoc:"📍 موقعك المباشر",phItems:"مثال: 2 برجر، 1 بطاطس",phAddr:"مثال: شقة 4ب، شارع محمد الخامس",
+    confirmBtn:"🚀 تأكيد الطلب",liveTitle:"الطلبات الواردة",refreshBtn:"🔄 تحديث",noOrders:"لا توجد طلبات حالياً.",
+    sentAt:"في",claimBtn:"🙋 استلام الطلب",claimed:"✅ مُسلَّم لـ",doneBtn:"✅ تم التوصيل",
+    wrongPass:"❌ رمز خاطئ!",locating:"⏳ جاري تحديد موقعك…",locOk:"✅ تم تحديد الموقع!",
+    locErr:"❌ تم رفض GPS — فعّل الموقع في إعدادات المتصفح",
+    orderOk:"🚀 تم إرسال الطلب! فريق التوصيل على علم.",
+    needItems:"⚠️ الرجاء تحديد ما تريد طلبه.",needRest:"⚠️ الرجاء اختيار مطعم.",
+    itemsHdr:"تفاصيل الطلب:",addrHdr:"العنوان:",locHdr:"📍 الموقع:",
+    openMap:"فتح في الخريطة",noLoc:"لم يُشارك",
+    priceTxt:"رسوم التوصيل: <strong>10 – 15 درهم</strong> لكل طلب، تُدفع عند الاستلام.",
+    tyMsg:"✨ شكراً لاختياركم CHRONO! ✨",selectPh:"— اختر —",superOpt:"🛒 سوبرماركت",
+    smSub:"أدخل بياناتك للدخول",smNamePh:"الاسم الكامل",smWaPh:"واتساب (212XXXXXXXXX)",smPassPh:"الرمز السري",
+    smBtn:"🔓 دخول",smErrName:"⚠️ أدخل اسمك الكامل",smErrWa:"⚠️ أدخل رقم واتساب",smErrPass:"❌ رمز خاطئ!",
+    notifNewOrder:"طلب جديد! 🛵",notifNewBody:"تم استلام طلب جديد.",
+    trTitle:"📦 متابعة طلبك",trLblStatus:"الحالة",trLblWorker:"الموصّل",
+    trPending:"⏳ في الانتظار",trInProgress:"🛵 في الطريق",trDone:"✅ تم التوصيل",
+    trNoWorker:"لم يُستلم بعد",trCallWorker:"📞 اتصل بالموصّل",trCancelOrder:"❌ إلغاء الطلب",
+    trCancelConfirm:"هل تريد إلغاء طلبك؟",trCancelled:"تم إلغاء الطلب.",
+    menuPhotos:"صور المنيو",noMenu:"لا توجد صور متاحة لهذا المطعم حالياً.",
+    locTip:"💡 سيحصل فريق التوصيل على موقعك الدقيق",
+    lblCounter:"الطلبات المكتملة اليوم (منذ 00:00):",
+  },
+  fr:{
+    appTitle:"🛵 Commander",toggleDel:"📦 Vue Livreurs",toggleCust:"◀ Retour",delTitle:"📦 Commandes",
+    orderTitle:"Passer une commande",lblRest:"Restaurant / Magasin",lblItems:"Que voulez-vous ?",
+    lblAddr:"Adresse de livraison",lblOpt:"facultatif",lblLoc:"📍 Position en direct",
+    phItems:"ex : 2x Burger, 1x Frites",phAddr:"ex : Appt 4B, Rue Mohammed V",
+    confirmBtn:"🚀 Confirmer",liveTitle:"Commandes en cours",refreshBtn:"🔄 Actualiser",
+    noOrders:"Aucune commande.",sentAt:"à",claimBtn:"🙋 Prendre",claimed:"✅ Prise par",doneBtn:"✅ Livré",
+    wrongPass:"❌ Code incorrect !",locating:"⏳ Localisation…",locOk:"✅ Position capturée !",
+    locErr:"❌ GPS refusé",orderOk:"🚀 Commande envoyée !",
+    needItems:"⚠️ Précisez votre commande.",needRest:"⚠️ Choisissez un restaurant.",
+    itemsHdr:"Détails :",addrHdr:"Adresse :",locHdr:"📍 Position :",
+    openMap:"Ouvrir Maps",noLoc:"Non partagée",
+    priceTxt:"Frais de livraison : <strong>10 – 15 MAD</strong> par commande.",
+    tyMsg:"✨ Merci de choisir CHRONO ! ✨",selectPh:"— Choisir —",superOpt:"🛒 Supermarché",
+    smSub:"Entrez vos informations",smNamePh:"Nom complet",smWaPh:"WhatsApp (212XXXXXXXXX)",smPassPh:"Code secret",
+    smBtn:"🔓 Entrer",smErrName:"⚠️ Entrez votre nom",smErrWa:"⚠️ Entrez votre WhatsApp",smErrPass:"❌ Code incorrect !",
+    notifNewOrder:"Nouvelle commande! 🛵",notifNewBody:"Une nouvelle commande vient d'arriver.",
+    trTitle:"📦 Suivi de commande",trLblStatus:"Statut",trLblWorker:"Livreur",
+    trPending:"⏳ En attente",trInProgress:"🛵 En route",trDone:"✅ Livré",
+    trNoWorker:"Non assigné",trCallWorker:"📞 Appeler le livreur",trCancelOrder:"❌ Annuler",
+    trCancelConfirm:"Annuler votre commande ?",trCancelled:"Commande annulée.",
+    menuPhotos:"Photos du menu",noMenu:"Aucune photo disponible pour ce restaurant.",
+    locTip:"💡 Le livreur recevra votre position précise",
+    lblCounter:"Livraisons réussies aujourd'hui (depuis 00:00):",
+  },
+  en:{
+    appTitle:"🛵 Order Now",toggleDel:"📦 Delivery View",toggleCust:"◀ Back",delTitle:"📦 Live Orders",
+    orderTitle:"Place Your Order",lblRest:"Restaurant / Store",lblItems:"What do you want?",
+    lblAddr:"Delivery Address",lblOpt:"optional",lblLoc:"📍 Your Live Location",
+    phItems:"e.g. 2x Burger, 1x Fries",phAddr:"e.g. Apt 4B, Rue Mohammed V",
+    confirmBtn:"🚀 Confirm Order",liveTitle:"Live Orders",refreshBtn:"🔄 Refresh",
+    noOrders:"No orders yet.",sentAt:"at",claimBtn:"🙋 Claim",claimed:"✅ Claimed by",doneBtn:"✅ Delivered",
+    wrongPass:"❌ Wrong code!",locating:"⏳ Getting location…",locOk:"✅ Location captured!",
+    locErr:"❌ GPS denied — enable location",orderOk:"🚀 Order sent!",
+    needItems:"⚠️ Please fill in what you want.",needRest:"⚠️ Please choose a restaurant.",
+    itemsHdr:"Order Details:",addrHdr:"Address:",locHdr:"📍 Location:",
+    openMap:"Open in Maps",noLoc:"Not shared",
+    priceTxt:"Delivery fee: <strong>10 – 15 MAD</strong> per order.",
+    tyMsg:"✨ Thank you for choosing CHRONO! ✨",selectPh:"— Choose —",superOpt:"🛒 Supermarket",
+    smSub:"Enter your details to continue",smNamePh:"Full name",smWaPh:"WhatsApp (212XXXXXXXXX)",smPassPh:"Passcode",
+    smBtn:"🔓 Enter",smErrName:"⚠️ Enter your full name",smErrWa:"⚠️ Enter your WhatsApp",smErrPass:"❌ Wrong code!",
+    notifNewOrder:"New Order! 🛵",notifNewBody:"A new order just came in.",
+    trTitle:"📦 Track Your Order",trLblStatus:"Status",trLblWorker:"Delivery Person",
+    trPending:"⏳ Pending",trInProgress:"🛵 On the way",trDone:"✅ Delivered",
+    trNoWorker:"Not assigned yet",trCallWorker:"📞 Call Delivery Person",trCancelOrder:"❌ Cancel Order",
+    trCancelConfirm:"Cancel your order?",trCancelled:"Order cancelled.",
+    menuPhotos:"Menu Photos",noMenu:"No photos available for this restaurant yet.",
+    locTip:"💡 Your precise location will be shared with the delivery team",
+    lblCounter:"Completed deliveries today (since 00:00):",
+  }
+};
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  countVisit(); askNotifPerm();
+  checkAndRefreshCounter(); // تشغيل فحص العداد الفوري عند فتح التطبيق
+  setLang('ar'); buildDropdown(); updateStaffUI();
+  bindCursor(); bindMagnets();
+  setInterval(()=>{ 
+    if(view==='delivery') {
+      renderOrders();
+      checkAndRefreshCounter(); // فحص دوري كل 12 ثانية للتأكد من تخطي منتصف الليل
+    } 
+    refreshTracking(); 
+  },12000);
+});
+function countVisit(){localStorage.setItem('qd_visits',(parseInt(localStorage.getItem('qd_visits')||'0')+1).toString());}
+
+/* ── STAFF AUTH ── */
+function updateStaffUI(){
+  const info=document.getElementById('staff-info');
+  const disp=document.getElementById('staff-name-display');
+  if(staffLogged&&staffName){info.style.display='flex';disp.textContent='👤 '+staffName;}
+  else info.style.display='none';
+  bindCursor(); bindMagnets();
+}
+function openStaffModal(){
+  const t=T[lang];
+  document.getElementById('staff-modal').style.display='flex';
+  document.getElementById('sm-sub').textContent=t.smSub;
+  document.getElementById('sm-name').placeholder=t.smNamePh;
+  document.getElementById('sm-wa').placeholder=t.smWaPh;
+  document.getElementById('sm-pass').placeholder=t.smPassPh;
+  document.getElementById('sm-btn').textContent=t.smBtn;
+  document.getElementById('sm-err').textContent='';
+  document.getElementById('sm-name').value='';
+  document.getElementById('sm-wa').value='';
+  document.getElementById('sm-pass').value='';
+  setTimeout(()=>document.getElementById('sm-name').focus(),100);
+  bindCursor(); bindMagnets();
+}
+function staffLogin(){
+  const name=document.getElementById('sm-name').value.trim();
+  const wa  =document.getElementById('sm-wa').value.trim();
+  const pass=document.getElementById('sm-pass').value;
+  const t=T[lang];
+  if(!name){document.getElementById('sm-err').textContent=t.smErrName;return;}
+  if(!wa)  {document.getElementById('sm-err').textContent=t.smErrWa;return;}
+  if(pass!==STAFF_PASS){document.getElementById('sm-err').textContent=t.smErrPass;return;}
+  staffName=name; staffWa=wa; staffLogged=true;
+  localStorage.setItem('qd_staff_name',name);
+  localStorage.setItem('qd_staff_wa',wa);
+  document.getElementById('staff-modal').style.display='none';
+  updateStaffUI();
+  view='delivery';
+  document.getElementById('cust-view').classList.remove('active');
+  document.getElementById('del-view').classList.add('active');
+  setLang(lang); renderOrders();
+}
+function staffLogout(){
+  staffName=''; staffWa=''; staffLogged=false;
+  localStorage.removeItem('qd_staff_name');
+  localStorage.removeItem('qd_staff_wa');
+  view='customer';
+  document.getElementById('del-view').classList.remove('active');
+  document.getElementById('cust-view').classList.add('active');
+  setLang(lang); updateStaffUI();
+}
+
+/* ── LANGUAGE ── */
+function setLang(l){
+  lang=l;
+  document.documentElement.lang=l;
+  document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  document.getElementById('lang-sel').value=l;
+  const t=T[l];
+  setText('app-title',view==='customer'?t.appTitle:t.delTitle);
+  setText('toggle-btn',view==='customer'?t.toggleDel:t.toggleCust);
+  setText('order-title',t.orderTitle); setText('lbl-rest',t.lblRest);
+  setText('lbl-items',t.lblItems); setText('lbl-addr',t.lblAddr);
+  setText('lbl-opt',t.lblOpt); setText('lbl-loc',t.lblLoc);
+  setText('confirm-btn',t.confirmBtn); setText('live-title',t.liveTitle);
+  setText('refresh-btn',t.refreshBtn); setText('ty-msg',t.tyMsg);
+  setText('lbl-counter',t.lblCounter);
+  setPH('order-items',t.phItems); setPH('order-addr',t.phAddr);
+  document.getElementById('price-txt').innerHTML=t.priceTxt;
+  const lb=document.getElementById('loc-btn');
+  if(lb.classList.contains('ok')) document.getElementById('loc-btn-txt').textContent=t.locOk;
+  else if(lb.classList.contains('err')) document.getElementById('loc-btn-txt').textContent=t.locErr;
+  else document.getElementById('loc-btn-txt').textContent=l==='ar'?'مشاركة موقعي':l==='fr'?'Partager ma position':'Share My Location';
+  buildDropdown();
+  if(view==='delivery') renderOrders();
+  refreshTracking();
+}
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function setPH(id,v){const el=document.getElementById(id);if(el)el.placeholder=v;}
+
+/* ── DROPDOWN ── */
+function buildDropdown(){
+  const sel=document.getElementById('order-rest'); const cur=sel.value;
+  sel.innerHTML=`<option value="">${T[lang].selectPh}</option>`;
+  const s=document.createElement('option');s.value='SUPER';s.textContent=T[lang].superOpt;sel.appendChild(s);
+  getRests().forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;sel.appendChild(o);});
+  if(cur){sel.value=cur; onRestChange();}
+}
+
+/* ── MENU PHOTOS ── */
+function onRestChange(){
+  const val=document.getElementById('order-rest').value;
+  const panel=document.getElementById('menu-panel');
+  const grid=document.getElementById('menu-photos-grid');
+  const nameEl=document.getElementById('menu-panel-name');
+  if(!val||val==='SUPER'){panel.style.display='none';return;}
+  const menus=getMenus();
+  const photos=menus[val]||[];
+  nameEl.textContent='📸 '+T[lang].menuPhotos+' — '+val;
+  grid.innerHTML='';
+  if(!photos.length){
+    grid.innerHTML=`<span class="no-photo">${T[lang].noMenu}</span>`;
+  } else {
+    photos.forEach(src=>{
+      const img=document.createElement('img');
+      img.src=src; img.alt='menu'; img.loading='lazy';
+      grid.appendChild(img);
+    });
+  }
+  panel.style.display='block';
+}
+
+/* ── VIEW TOGGLE ── */
+function toggleView(){
+  if(view==='customer'){
+    if(staffLogged){
+      view='delivery';
+      document.getElementById('cust-view').classList.remove('active');
+      document.getElementById('del-view').classList.add('active');
+      setLang(lang); checkAndRefreshCounter(); renderOrders();
+    } else { openStaffModal(); }
+  } else {
+    view='customer';
+    document.getElementById('del-view').classList.remove('active');
+    document.getElementById('cust-view').classList.add('active');
+    setLang(lang);
+  }
+  bindCursor(); bindMagnets();
+}
+
+/* ── PRECISE GPS via watchPosition ── */
+let _watchId=null,_watchTimeout=null;
+function shareLocation(){
+  const btn=document.getElementById('loc-btn');
+  const txt=document.getElementById('loc-btn-txt');
+  const t=T[lang];
+  gpsData=null;
+  if(_watchId!==null){navigator.geolocation.clearWatch(_watchId);_watchId=null;}
+  clearTimeout(_watchTimeout);
+  btn.className='btn btn-blue spin';
+  txt.textContent=t.locating;
+  setLocStatus('load',t.locating);
+  if(!navigator.geolocation){setLocErr(t.locErr);return;}
+
+  let bestAcc=Infinity,bestPos=null;
+  const TARGET=100, MAX_MS=30000;
+
+  _watchId=navigator.geolocation.watchPosition(
+    pos=>{
+      const acc=pos.coords.accuracy;
+      if(acc<bestAcc){bestAcc=acc;bestPos=pos;}
+      const accR=Math.round(acc);
+      setLocStatus('load',`${t.locating} ±${accR}م`);
+      if(acc<=TARGET){lockLocation(bestPos);return;}
+    },
+    err=>{
+      if(err.code===1){setLocErr(t.locErr);stopWatch();return;}
+      if(bestPos)lockLocation(bestPos);else{setLocErr(t.locErr);stopWatch();}
+    },
+    {
+      enableHighAccuracy:true,
+      maximumAge:0,
+      timeout:20000
+    }
+  );
+  _watchTimeout=setTimeout(()=>{
+    if(bestPos)lockLocation(bestPos);
+    else{setLocErr(t.locErr);stopWatch();}
+  },MAX_MS);
+}
+function lockLocation(pos){
+  stopWatch();
+  const la=pos.coords.latitude,lo=pos.coords.longitude,acc=Math.round(pos.coords.accuracy);
+  const link=`https://www.google.com/maps/place/${la.toFixed(8)},${lo.toFixed(8)}/@${la.toFixed(8)},${lo.toFixed(8)},18z`;
+  gpsData={lat:la.toFixed(8),lng:lo.toFixed(8),link};
+  document.getElementById('loc-btn').className='btn btn-blue ok';
+  const t=T[lang];
+  document.getElementById('loc-btn-txt').textContent=t.locOk;
+  const q=acc<=30?(lang==='ar'?'ممتازة':lang==='fr'?'excellente':'excellent'):acc<=80?(lang==='ar'?'جيدة':'good'):(lang==='ar'?'متوسطة':'moderate');
+  setLocStatus('ok',`${t.locOk} ±${acc}م (${q})`);
+}
+function stopWatch(){if(_watchId!==null){navigator.geolocation.clearWatch(_watchId);_watchId=null;}clearTimeout(_watchTimeout);}
+function setLocStatus(type,msg){
+  const s=document.getElementById('loc-status');
+  s.textContent=msg; s.style.display='flex';
+  s.className=type==='ok'?'show ok':type==='err'?'show err':'show load';
+}
+function setLocErr(msg){
+  document.getElementById('loc-btn').className='btn btn-blue err';
+  document.getElementById('loc-btn-txt').textContent=msg;
+  setLocStatus('err',msg);
+}
+
+/* ── PLACE ORDER ── */
+function placeOrder(){
+  const rest=document.getElementById('order-rest').value;
+  const items=document.getElementById('order-items').value.trim();
+  const addr=document.getElementById('order-addr').value.trim();
+  const t=T[lang];
+  if(!rest){alert(t.needRest);return;}
+  if(!items){alert(t.needItems);return;}
+  const label=rest==='SUPER'?'🛒 Supermarket':rest;
+  const order={
+    id:'CMD-'+Math.floor(1000+Math.random()*9000),
+    restaurant:label,items,address:addr||'—',
+    lat:gpsData?.lat||null,lng:gpsData?.lng||null,link:gpsData?.link||null,
+    status:'Pending',claimedBy:null,claimedByWa:null,
+    time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+  };
+  const orders=getOrders(); orders.push(order); saveOrders(orders);
+  lastOrderId=order.id;
+  pushNotif(t.notifNewOrder,`${label} — ${t.notifNewBody}`);
+  localStorage.setItem('qd_last_order_ts',Date.now().toString());
+
+  document.getElementById('order-rest').selectedIndex=0;
+  document.getElementById('order-items').value='';
+  document.getElementById('order-addr').value='';
+  document.getElementById('menu-panel').style.display='none';
+  gpsData=null;
+  document.getElementById('loc-btn').className='btn btn-blue';
+  document.getElementById('loc-btn-txt').textContent=lang==='ar'?'مشاركة موقعي':lang==='fr'?'Partager ma position':'Share My Location';
+  document.getElementById('loc-status').style.display='none';
+
+  const m=document.getElementById('moto'); m.style.display='block'; m.classList.add('go');
+  setTimeout(()=>{m.classList.remove('go');m.style.display='none';refreshTracking();},2000);
+}
+
+/* ── CUSTOMER ORDER TRACKING ── */
+function refreshTracking(){
+  const panel=document.getElementById('tracking-panel');
+  if(!lastOrderId){panel.style.display='none';return;}
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===lastOrderId);
+  if(!o){panel.style.display='none';return;}
+  const t=T[lang];
+  panel.style.display='block';
+  document.getElementById('tr-title').textContent=t.trTitle;
+  document.getElementById('tr-id').textContent=o.id;
+  document.getElementById('tr-lbl-status').textContent=t.trLblStatus;
+  document.getElementById('tr-lbl-worker').textContent=t.trLblWorker;
+  const statusTxt=o.status==='Delivered'?t.trDone:o.claimedBy?t.trInProgress:t.trPending;
+  document.getElementById('tr-status').textContent=statusTxt;
+  document.getElementById('tr-worker').textContent=o.claimedBy||t.trNoWorker;
+  const acts=document.getElementById('tr-actions');
+  acts.innerHTML='';
+  if(o.status!=='Delivered'&&o.status!=='Cancelled'){
+    if(o.claimedBy&&o.claimedByWa){
+      const callBtn=document.createElement('a');
+      callBtn.href='https://wa.me/'+o.claimedByWa.replace(/\D/g,'');
+      callBtn.target='_blank';
+      callBtn.className='btn btn-wa';
+      callBtn.innerHTML='💬 '+t.trCallWorker;
+      acts.appendChild(callBtn);
+    }
+    const cancelBtn=document.createElement('button');
+    cancelBtn.className='btn btn-cancel';
+    cancelBtn.textContent=t.trCancelOrder;
+    cancelBtn.onclick=()=>{
+      if(!confirm(t.trCancelConfirm))return;
+      const all=getOrders();
+      const idx=all.findIndex(x=>x.id===lastOrderId);
+      if(idx>-1){all[idx].status='Cancelled';saveOrders(all);}
+      lastOrderId=null;
+      panel.style.display='none';
+      showToast(t.trCancelled);
+    };
+    acts.appendChild(cancelBtn);
+  }
+  bindCursor(); bindMagnets();
+}
+
+/* ── RENDER ORDERS (delivery view) ── */
+let _prevCount=0;
+function renderOrders(){
+  const orders=getOrders().filter(o=>o.status!=='Delivered'&&o.status!=='Cancelled');
+  const c=document.getElementById('orders-list');
+  c.innerHTML='';
+  const t=T[lang];
+  if(orders.length>_prevCount&&_prevCount>0){pushNotif(t.notifNewOrder,t.notifNewBody);showToast('🛵 '+t.notifNewOrder);}
+  _prevCount=orders.length;
+  if(!orders.length){c.innerHTML=`<p style="color:var(--muted);text-align:center;padding:20px">${t.noOrders}</p>`;return;}
+  [...orders].reverse().forEach(o=>{
+    const claimed=!!o.claimedBy,isMine=o.claimedBy===staffName;
+    const d=document.createElement('div');d.className='order-card';
+    d.innerHTML=`
+      <div class="order-hd">
+        <div class="order-rest">${o.restaurant}</div>
+        <span class="badge pending">⏳ ${o.status}</span>
+      </div>
+      <div class="sec-lbl">${t.itemsHdr}</div><div class="data-box">${o.items}</div>
+      <div class="sec-lbl">${t.addrHdr}</div><div class="data-box">${o.address}</div>
+      <div class="sec-lbl">${t.locHdr}</div>
+      <div class="data-box">
+        ${o.link?`<span style="font-size:.79rem;color:var(--muted)">📌 ${o.lat}, ${o.lng}</span><br><a class="maps-chip" href="${o.link}" target="_blank">🗺️ ${t.openMap}</a>`:`<span style="color:var(--muted)">— ${t.noLoc}</span>`}
+      </div>
+      ${claimed?`<div class="claim-info">🙋 ${t.claimed} <b>${o.claimedBy}</b></div>`:''}
+      <div class="order-ft">
+        <span>🕒 ${t.sentAt}: ${o.time} | <b>${o.id}</b></span>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          ${!claimed?`<button class="btn btn-claim" onclick="claimOrder('${o.id}')">${t.claimBtn}</button>`
+            :isMine?`<button class="btn btn-claim claimed" disabled>${t.claimed} ${o.claimedBy}</button>`
+                   :`<button class="btn btn-claim claimed" disabled>🔒 ${o.claimedBy}</button>`}
+          ${isMine||!claimed?`<button class="btn btn-done" onclick="markDone('${o.id}')">${t.doneBtn}</button>`:''}
+        </div>
+      </div>`;
+    c.appendChild(d);
+  });
+  bindCursor(); bindMagnets();
+}
+function claimOrder(id){
+  if(!staffLogged||!staffName){openStaffModal();return;}
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===id);
+  if(!o||o.claimedBy)return;
+  o.claimedBy=staffName; o.claimedByWa=staffWa;
+  saveOrders(orders); renderOrders();
+  showToast(`✅ ${T[lang].claimed} ${staffName}`);
+}
+function markDone(id){
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  o.status='Delivered'; saveOrders(orders); renderOrders();
+  incrementCounter(); // تفعيل زيادة العداد عند اكتمال الطلب بنجاح
+  showToast('✅ تم التوصيل بنجاح!');
+}
+</script>
+</body>
+</html>

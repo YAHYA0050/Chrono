@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#f97316">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CHRONO Delivery">
+<title>CHRONO — Delivery</title>
+<link rel="manifest" href="chrono-delivery-manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Noto+Kufi+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p:#f97316;--ph:#ea580c;
+  --bg:#0d0d0d;--card:#181818;--card2:#1f1f1f;--card3:#252525;
+  --light:#f1f5f9;--muted:#6b7a8d;--border:#252f3d;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+  --purple:#7c3aed;--ink:#000;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{height:100%;}
+body{
+  background:var(--bg);color:var(--light);
+  font-family:'Noto Kufi Arabic',system-ui,sans-serif;
+  font-size:15px;line-height:1.55;
+  min-height:100%;min-height:100dvh;
+  padding:0;overflow-x:hidden;
+}
+
+/* ── APP SHELL ── */
+.app-bar{
+  position:fixed;top:0;inset-inline:0;z-index:200;
+  background:#111;border-bottom:2px solid var(--border);
+  padding:calc(var(--safe-top) + 10px) 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.app-bar-brand{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:900;color:var(--p);letter-spacing:4px;text-shadow:1px 1px 0 #000;}
+.app-bar-sub{font-size:.68rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;line-height:1;}
+.app-bar-right{display:flex;align-items:center;gap:8px;}
+.staff-chip{font-size:.75rem;color:var(--muted);background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* Main content below fixed bar */
+.main{padding-top:calc(var(--safe-top) + 68px);padding-bottom:calc(var(--safe-bot) + 80px);padding-inline:14px;max-width:620px;margin:0 auto;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;font-weight:700;border:2px solid var(--ink);font-family:inherit;font-size:.88rem;padding:10px 16px;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .18s,background .18s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer;}
+.btn:active{transform:scale(.93)!important;}
+.btn-primary{background:var(--p);color:#000;}
+.btn-primary:active{background:var(--ph);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:active{filter:brightness(1.15);}
+.btn-slate{background:#2d3d50;color:#fff;}
+.btn-slate:active{filter:brightness(1.2);}
+.btn-red{background:#450a0a;color:#fca5a5;border:1px solid #7f1d1d;font-size:.8rem;padding:6px 12px;}
+.btn-red:active{background:#7f1d1d;color:#fff;}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;font-size:.78rem;}
+.btn-logout:active{border-color:var(--red);color:var(--red);}
+.btn-claim{background:var(--purple);color:#fff;padding:8px 14px;font-size:.82rem;border-radius:8px;}
+.btn-claim:active{background:#6d28d9;}
+.btn-claim.locked{background:#1e293b;color:var(--muted);border-color:#334155;pointer-events:none;}
+.btn-done{background:var(--green);color:#fff;padding:8px 14px;font-size:.82rem;border-radius:8px;}
+.btn-done:active{filter:brightness(1.15);}
+.btn-full{width:100%;}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  min-height:100dvh;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:var(--bg);
+}
+.login-box{background:var(--card);border:3px solid var(--ink);border-radius:18px;padding:32px 24px;width:min(380px,100%);box-shadow:6px 6px 0 var(--ink);text-align:center;}
+.login-logo{font-family:'Barlow Condensed',sans-serif;font-size:2.6rem;font-weight:900;color:var(--p);letter-spacing:5px;margin-bottom:2px;text-shadow:2px 2px 0 #000;}
+.login-role{font-size:.75rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:22px;}
+.login-box input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:1rem;background:#202020;color:var(--light);font-family:inherit;margin-bottom:10px;text-align:center;transition:border-color .2s,box-shadow .2s;}
+.login-box input:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 4px rgba(249,115,22,.15);}
+.login-err{color:var(--red);font-size:.82rem;margin-top:6px;min-height:1.1em;}
+.remember-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-size:.83rem;color:var(--muted);}
+.remember-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--p);}
+
+/* ── PULSE DOT (new order indicator) ── */
+.pulse-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-inline-start:6px;animation:pdot 1s ease-in-out infinite;}
+@keyframes pdot{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.5);opacity:.6;}}
+
+/* ── ORDER CARDS ── */
+.order-card{border:3px solid var(--ink);padding:14px 15px;border-radius:12px;margin-bottom:12px;background:var(--card2);box-shadow:4px 4px 0 var(--ink);transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;}
+.order-card:active{transform:scale(.98);}
+.ord-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.ord-rest{font-weight:800;font-size:1rem;color:var(--p);}
+.ord-meta{font-size:.7rem;color:var(--muted);margin-top:1px;}
+.badge{padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;border:1px solid var(--ink);white-space:nowrap;}
+.badge-p{background:#fef08a;color:#854d0e;}
+.sec-lbl{font-size:.7rem;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.4px;margin:7px 0 3px;}
+.data-box{background:#141414;padding:9px 12px;border-radius:7px;font-size:.9rem;color:var(--light);border:2px solid var(--ink);line-height:1.5;}
+.maps-chip{display:inline-flex;align-items:center;gap:5px;background:#1d4ed8;color:#fff;text-decoration:none;padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700;margin-top:7px;border:1px solid var(--ink);}
+.claim-info{font-size:.8rem;color:#a78bfa;font-weight:700;margin-top:6px;padding:6px 10px;background:rgba(124,58,237,.1);border-radius:7px;border:1px solid rgba(124,58,237,.25);}
+.ord-ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:7px;font-size:.78rem;color:var(--muted);padding-top:8px;border-top:1px solid var(--border);}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:calc(var(--safe-bot) + 86px);inset-inline-end:14px;background:#1e293b;border:2px solid var(--p);border-radius:12px;padding:11px 16px;font-size:.86rem;font-weight:600;color:var(--light);box-shadow:0 8px 24px rgba(0,0,0,.6);z-index:500;transform:translateY(120px);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;max-width:300px;}
+#toast.show{transform:translateY(0);opacity:1;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;inset-inline:0;z-index:200;background:#111;border-top:2px solid var(--border);padding:8px 16px calc(var(--safe-bot) + 8px);display:flex;gap:10px;justify-content:center;}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .emoji{font-size:3rem;margin-bottom:12px;}
+.empty-state p{font-size:.92rem;}
+
+/* ── NOTIF BANNER ── */
+#notif-banner{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.83rem;display:none;align-items:center;gap:10px;}
+#notif-banner.show{display:flex;}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">CHRONO</div>
+    <div class="login-role">🛵 Delivery Team</div>
+    <input type="text"     id="sm-name" placeholder="Full Name" maxlength="40" autocomplete="name">
+    <input type="tel"      id="sm-wa"   placeholder="WhatsApp number (212XXXXXXXXX)" maxlength="20" autocomplete="tel">
+    <input type="password" id="sm-pass" placeholder="Passcode" maxlength="20"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="remember-row">
+      <input type="checkbox" id="remember" checked>
+      <label for="remember" style="cursor:pointer;">Stay logged in on this device</label>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="padding:13px;">🔓 Sign In</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" style="display:none;">
+
+  <!-- App Bar -->
+  <div class="app-bar">
+    <div>
+      <div class="app-bar-brand">CHRONO</div>
+      <div class="app-bar-sub">Delivery Board</div>
+    </div>
+    <div class="app-bar-right">
+      <div class="staff-chip" id="staff-chip">👤 —</div>
+      <button class="btn btn-logout btn" onclick="doLogout()">↩</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Notification permission banner -->
+    <div id="notif-banner">
+      <span>🔔</span>
+      <div style="flex:1;">Enable notifications to get orders instantly</div>
+      <button class="btn btn-primary" style="padding:6px 12px;font-size:.78rem;" onclick="askNotif()">Enable</button>
+    </div>
+
+    <!-- Header row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-weight:800;font-size:1.05rem;">Incoming Orders <span id="new-dot" style="display:none;" class="pulse-dot"></span></div>
+        <div style="font-size:.72rem;color:var(--muted)" id="last-ref">—</div>
+      </div>
+      <button class="btn btn-slate" onclick="loadOrders()" style="padding:8px 14px;font-size:.82rem;">🔄 Refresh</button>
+    </div>
+
+    <!-- Personal stats card -->
+    <div id="my-stats" style="display:flex;gap:10px;margin-bottom:16px;">
+      <div style="flex:1;background:#1a1a1a;border:3px solid #000;border-radius:12px;padding:14px 12px;text-align:center;box-shadow:4px 4px 0 #000;">
+        <div style="font-size:1.9rem;font-weight:900;color:var(--green);line-height:1;" id="my-done-today">0</div>
+        <div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:4px;">My Deliveries Today</div>
+      </div>
+      <div style="flex:1;background:#1a1a1a;border:3px solid #000;border-radius:12px;padding:14px 12px;text-align:center;box-shadow:4px 4px 0 #000;">
+        <div style="font-size:1.9rem;font-weight:900;color:var(--p);line-height:1;" id="my-claimed">0</div>
+        <div style="font-size:.68rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:4px;">Currently Claimed</div>
+      </div>
+    </div>
+
+    <div id="orders-list"></div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="btn btn-slate" onclick="loadOrders()" style="flex:1;padding:12px;">🔄 Refresh Orders</button>
+  </div>
+
+</div>
+
+<script>
+/* ══ REGISTER SERVICE WORKER ══ */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('chrono-sw.js').catch(e=>console.warn('SW:',e));
+}
+
+/* ══ CONSTANTS ══ */
+const STAFF_PASS='Chrono0000';          // ← change this
+const SESSION_KEY='chrono_staff_session';
+const INIT_RESTS=["10K","Delish garden","to the sweet","Posto Gosto","Swidi","Coin gourmand","Snack amir","Ait maten","snack zacki","بانبني على الفحم","Snack bg","Green Canarias","Janoub","IMA","Amigo","MC SOLA","La Gondola","With friends","Marmara Fruits","مقشدة يوسف","Brunch Bistro","إمبراطور","Maestro","Le Jus Quotidien","Snack Youness"];
+
+/* ══ STATE ══ */
+let staffName='', staffWa='';
+let _prevPending=null;   // to detect new orders
+let _pollInterval=null;
+
+/* ══ DATA ══ */
+const getOrders=()=>JSON.parse(localStorage.getItem('qd_orders'))||[];
+const saveOrders=o=>localStorage.setItem('qd_orders',JSON.stringify(o));
+
+/* ══ NOTIFICATIONS ══ */
+function askNotif(){
+  if(!('Notification' in window)){showToast('Notifications not supported by this browser');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){document.getElementById('notif-banner').classList.remove('show');showToast('✅ Notifications enabled');}
+    else showToast('❌ Notifications blocked — enable them in browser settings');
+  });
+}
+function pushNotif(title,body){
+  if('Notification' in window && Notification.permission==='granted'){
+    try{
+      const n=new Notification(title,{body,icon:'',tag:'chrono-order',renotify:true,vibrate:[300,100,300]});
+      n.onclick=()=>{window.focus();n.close();};
+    }catch(e){}
+  }
+}
+function updateNotifBanner(){
+  const b=document.getElementById('notif-banner');
+  if('Notification' in window && Notification.permission!=='granted') b.classList.add('show');
+  else b.classList.remove('show');
+}
+
+/* ══ TOAST ══ */
+function showToast(msg,d=3500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),d);
+}
+
+/* ══ AUTH ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  // Check persistent session
+  try{
+    const s=JSON.parse(localStorage.getItem(SESSION_KEY)||'{}');
+    if(s.name && s.wa){
+      staffName=s.name; staffWa=s.wa;
+      enterApp(); return;
+    }
+  }catch(e){}
+  document.getElementById('login-screen').style.display='flex';
+});
+
+function doLogin(){
+  const name=document.getElementById('sm-name').value.trim();
+  const wa=document.getElementById('sm-wa').value.trim();
+  const pass=document.getElementById('sm-pass').value;
+  const err=document.getElementById('login-err');
+  if(!name){err.textContent='⚠️ Please enter your full name';return;}
+  if(!wa){err.textContent='⚠️ Please enter your WhatsApp number';return;}
+  if(pass!==STAFF_PASS){err.textContent='❌ Wrong passcode';document.getElementById('sm-pass').value='';return;}
+  staffName=name; staffWa=wa;
+  if(document.getElementById('remember').checked)
+    localStorage.setItem(SESSION_KEY,JSON.stringify({name,wa}));
+  enterApp();
+}
+
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('staff-chip').textContent='👤 '+staffName;
+  updateNotifBanner();
+  loadOrders();
+  // Poll every 12 seconds for new orders
+  _pollInterval=setInterval(()=>loadOrders(true),12000);
+  // Also listen for storage changes from other tabs/pages
+  window.addEventListener('storage',e=>{
+    if(e.key==='qd_orders'||e.key==='qd_last_order_ts') loadOrders(true);
+  });
+}
+
+function doLogout(){
+  clearInterval(_pollInterval);
+  staffName=''; staffWa='';
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('sm-name').value='';
+  document.getElementById('sm-wa').value='';
+  document.getElementById('sm-pass').value='';
+  document.getElementById('login-err').textContent='';
+}
+
+/* ══ LOAD & RENDER ORDERS ══ */
+function loadOrders(silent=false){
+  const allOrders = getOrders();
+
+  // ── Personal stats: only my deliveries ──
+  const todayStr = new Date().toDateString();
+  const myDoneToday = allOrders.filter(o =>
+    o.claimedBy === staffName &&
+    o.status === 'Delivered' &&
+    new Date(o.completedAt||o.time).toDateString() === todayStr
+  ).length;
+  const myClaimed = allOrders.filter(o =>
+    o.claimedBy === staffName && o.status === 'Pending'
+  ).length;
+  document.getElementById('my-done-today').textContent = myDoneToday;
+  document.getElementById('my-claimed').textContent = myClaimed;
+
+  const orders = allOrders.filter(o=>o.status!=='Delivered'&&o.status!=='Cancelled');
+  const pendingIds=orders.map(o=>o.id).sort().join(',');
+
+  // Detect new orders
+  if(_prevPending!==null && pendingIds!==_prevPending){
+    const newCount=orders.length-((_prevPending?_prevPending.split(',').filter(Boolean).length:0));
+    if(newCount>0){
+      pushNotif('New Order! 🛵',`A new order just came in — check the board.`);
+      if(!silent){}else showToast('🛵 New order incoming!');
+      document.getElementById('new-dot').style.display='inline-block';
+      setTimeout(()=>document.getElementById('new-dot').style.display='none',5000);
+    }
+  }
+  _prevPending=pendingIds;
+
+  document.getElementById('last-ref').textContent='Last updated: '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  renderOrders(orders);
+}
+
+function renderOrders(orders){
+  const c=document.getElementById('orders-list');
+  c.innerHTML='';
+  if(!orders.length){
+    c.innerHTML=`<div class="empty-state"><div class="emoji">📭</div><p>No incoming orders right now.<br>New orders will appear here automatically.</p></div>`;
+    return;
+  }
+
+  [...orders].reverse().forEach(o=>{
+    const claimed=!!o.claimedBy;
+    const isMine=o.claimedBy===staffName;
+    const card=document.createElement('div');
+    card.className='order-card';
+
+    // Claim status info
+    let claimHtml='';
+    if(claimed){
+      claimHtml=`<div class="claim-info">${isMine?'🙋 أنت من استلم هذا الطلب':'🔒 استلمه: <b>'+o.claimedBy+'</b>'}</div>`;
+    }
+
+    card.innerHTML=`
+      <div class="ord-hd">
+        <div>
+          <div class="ord-rest">${o.restaurant}</div>
+          <div class="ord-meta">${o.id} · 🕒 ${o.time}</div>
+        </div>
+        <span class="badge badge-p">⏳ في الانتظار</span>
+      </div>
+      <div class="sec-lbl">الطلب</div>
+      <div class="data-box">${o.items}</div>
+      <div class="sec-lbl">العنوان</div>
+      <div class="data-box">${o.address||'—'}</div>
+      <div class="sec-lbl">الموقع</div>
+      <div class="data-box">
+        ${o.link
+          ?`<span style="font-size:.75rem;color:var(--muted)">📌 ${o.lat}, ${o.lng}</span><br><a class="maps-chip" href="${o.link}" target="_blank">🗺️ فتح الموقع الدقيق</a>`
+          :`<span style="color:var(--muted)">— لم يُشارك الموقع</span>`}
+      </div>
+      ${claimHtml}
+      <div class="ord-ft">
+        <span>🕒 ${o.time} | <b>${o.id}</b></span>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          ${!claimed
+            ?`<button class="btn btn-claim" onclick="claimOrder('${o.id}')">🙋 استلام</button>`
+            :isMine
+              ?`<span style="font-size:.75rem;color:#a78bfa;font-weight:700;">✅ استلمته</span>`
+              :`<span class="btn btn-claim locked">🔒 ${o.claimedBy}</span>`}
+          ${isMine
+            ?`<button class="btn btn-done" onclick="markDone('${o.id}')">✅ Delivered</button>`
+            :''}
+        </div>
+      </div>`;
+    c.appendChild(card);
+  });
+}
+
+function claimOrder(id){
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===id);
+  if(!o||o.claimedBy){showToast('⚠️ هذا الطلب تم استلامه بالفعل');loadOrders();return;}
+  o.claimedBy=staffName;
+  o.claimedByWa=staffWa;
+  saveOrders(orders);
+  showToast(`✅ استلمت الطلب — ${o.restaurant}`);
+  loadOrders();
+}
+
+function markDone(id){
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  o.status='Delivered';
+  o.completedAt=new Date().toISOString();
+  saveOrders(orders);
+  showToast('✅ Delivery marked as complete!');
+  loadOrders();
+}
+</script>
+</body>
+</html>

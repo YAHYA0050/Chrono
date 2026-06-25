@@ -477,10 +477,26 @@ document.addEventListener('DOMContentLoaded',()=>{
   setInterval(()=>{ 
     if(view==='delivery') {
       renderOrders();
-      checkAndRefreshCounter(); // فحص دوري كل 12 ثانية للتأكد من تخطي منتصف الليل
+      checkAndRefreshCounter();
     } 
     refreshTracking(); 
-  },12000);
+  },3000);
+
+  // ── Instant cross-page updates via BroadcastChannel ──
+  if('BroadcastChannel' in window){
+    const bc=new BroadcastChannel('chrono_orders');
+    bc.onmessage=()=>{
+      if(view==='delivery'){renderOrders();checkAndRefreshCounter();}
+      refreshTracking();
+    };
+  }
+  // ── Storage event fallback (other tabs) ──
+  window.addEventListener('storage',e=>{
+    if(e.key==='qd_orders'||e.key==='qd_last_order_ts'){
+      if(view==='delivery'){renderOrders();checkAndRefreshCounter();}
+      refreshTracking();
+    }
+  });
 });
 function countVisit(){localStorage.setItem('qd_visits',(parseInt(localStorage.getItem('qd_visits')||'0')+1).toString());}
 
@@ -696,6 +712,10 @@ function placeOrder(){
   lastOrderId=order.id;
   pushNotif(t.notifNewOrder,`${label} — ${t.notifNewBody}`);
   localStorage.setItem('qd_last_order_ts',Date.now().toString());
+  // ── Instant signal to delivery app & admin ──
+  if('BroadcastChannel' in window){
+    try{ new BroadcastChannel('chrono_orders').postMessage('new'); }catch(e){}
+  }
 
   document.getElementById('order-rest').selectedIndex=0;
   document.getElementById('order-items').value='';
@@ -785,7 +805,7 @@ function renderOrders(){
           ${!claimed?`<button class="btn btn-claim" onclick="claimOrder('${o.id}')">${t.claimBtn}</button>`
             :isMine?`<button class="btn btn-claim claimed" disabled>${t.claimed} ${o.claimedBy}</button>`
                    :`<button class="btn btn-claim claimed" disabled>🔒 ${o.claimedBy}</button>`}
-          ${isMine||!claimed?`<button class="btn btn-done" onclick="markDone('${o.id}')">${t.doneBtn}</button>`:''}
+          ${isMine?`<button class="btn btn-done" onclick="markDone('${o.id}')">${t.doneBtn}</button>`:''}
         </div>
       </div>`;
     c.appendChild(d);
@@ -805,8 +825,10 @@ function markDone(id){
   const orders=getOrders();
   const o=orders.find(x=>x.id===id);
   if(!o)return;
-  o.status='Delivered'; saveOrders(orders); renderOrders();
-  incrementCounter(); // تفعيل زيادة العداد عند اكتمال الطلب بنجاح
+  o.status='Delivered';
+  o.completedAt=new Date().toISOString();
+  saveOrders(orders); renderOrders();
+  incrementCounter();
   showToast('✅ تم التوصيل بنجاح!');
 }
 </script>
